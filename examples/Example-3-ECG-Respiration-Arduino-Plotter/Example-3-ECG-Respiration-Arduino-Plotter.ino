@@ -34,7 +34,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
-#include "protocentralAds1292r.h"
+#include "ads1292r.h"
 #include "ecgRespirationAlgo.h"
 #include <SPI.h>
 
@@ -69,7 +69,7 @@ void setup()
   pinMode(ADS1292_PWDN_PIN, OUTPUT);
 
   Serial.begin(57600);
-  ADS1292R.ads1292Init(ADS1292_CS_PIN,ADS1292_PWDN_PIN,ADS1292_START_PIN);
+  ADS1292R.Init(ADS1292_CS_PIN,ADS1292_PWDN_PIN,ADS1292_START_PIN);
   Serial.println("Initiliziation is done");
 }
 
@@ -77,7 +77,7 @@ void loop()
 {
   ads1292OutputValues ecgRespirationValues;
 
-  boolean ret = ADS1292R.getAds1292EcgAndRespirationSamples(ADS1292_DRDY_PIN,ADS1292_CS_PIN,&ecgRespirationValues);
+  boolean ret = ADS1292R.getEcgAndRespirationSamples(ADS1292_DRDY_PIN,ADS1292_CS_PIN,&ecgRespirationValues);
   if (ret == true)
   {
     ecgWaveBuff = (int16_t)(ecgRespirationValues.sDaqVals[1] >> 8) ;  // ignore the lower 8 bits out of 24bits

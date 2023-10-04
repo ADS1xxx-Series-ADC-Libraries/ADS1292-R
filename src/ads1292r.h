@@ -65,21 +65,23 @@ typedef struct Record{
 class ads1292r
 {
   public:
-    boolean getAds1292EcgAndRespirationSamples(const int dataReady,const int chipSelect,ads1292OutputValues *ecgRespirationValues);
-    static void ads1292Init(const int chipSelect,const int pwdnPin,const int startPin);
-    static void ads1292Reset(const int pwdnPin);
+    boolean getEcgAndRespirationSamples(const int dataReady,const int chipSelect,ads1292OutputValues *ecgRespirationValues);
+    static void Init(const int chipSelect,const int pwdnPin,const int startPin);
+    static void Reset(const int pwdnPin);
+    unsigned char getID(const int chipSelect);
+    static void StartReadDataContinuous (const int chipSelect);
+    unsigned char StopReadDataContinuous (const int chipSelect);    
 
   private:
-	  static void ads1292RegWrite (unsigned char READ_WRITE_ADDRESS, unsigned char DATA,const int chipSelect);
-    static void ads1292SPICommandData(unsigned char dataIn,const int chipSelect);
-    static void ads1292DisableStart(const int startPin);
-    static void ads1292EnableStart(const int startPin);
-    static void ads1292HardStop (const int startPin);
-    static void ads1292StartDataConvCommand (const int chipSelect);
-    static void ads1292SoftStop (const int chipSelect);
-    static void ads1292StartReadDataContinuous (const int chipSelect);
-    static void ads1292StopReadDataContinuous (const int chipSelect);
-    static char* ads1292ReadData(const int chipSelect);
+	  static void RegWrite (unsigned char READ_WRITE_ADDRESS, unsigned char DATA,const int chipSelect);
+    static void RegRead (unsigned char READ_ADDRESS,const int chipSelect);
+    static void SPICommandData(unsigned char dataIn,const int chipSelect);
+    static void DisableStart(const int startPin);
+    static void EnableStart(const int startPin);
+    static void HardStop (const int startPin);
+    static void StartDataConvCommand (const int chipSelect);
+    static void SoftStop (const int chipSelect);
+    static char* ReadData(const int chipSelect);
 };
 
 #endif

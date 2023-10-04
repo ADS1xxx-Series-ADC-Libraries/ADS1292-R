@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "protocentralAds1292r.h"
+#include "ads1292r.h"
 #include "ecgRespirationAlgo.h"
 #include <SPI.h>
 

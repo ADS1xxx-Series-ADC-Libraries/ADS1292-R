@@ -17,7 +17,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 #include "Arduino.h"
-#include "protocentralAds1292r.h"
+#include "ads1292r.h"
 #include <SPI.h>
 
 int j,i;
@@ -36,12 +36,12 @@ long statusByte=0;
 
 uint8_t LeadStatus=0;
 
-boolean ads1292r::getAds1292EcgAndRespirationSamples(const int dataReady,const int chipSelect,ads1292OutputValues *ecgRespirationValues)
+boolean ads1292r::getEcgAndRespirationSamples(const int dataReady,const int chipSelect,ads1292OutputValues *ecgRespirationValues)
 {
 
   if ((digitalRead(dataReady)) == LOW)      // Sampling rate is set to 125SPS ,DRDY ticks for every 8ms
   {
-    SPI_RX_Buff_Ptr = ads1292ReadData(chipSelect); // Read the data,point the data to a pointer
+    SPI_RX_Buff_Ptr = ReadData(chipSelect); // Read the data,point the data to a pointer
 
     for (int i = 0; i < 9; i++)
     {
@@ -90,7 +90,7 @@ boolean ads1292r::getAds1292EcgAndRespirationSamples(const int dataReady,const i
     return false;
 }
 
-char* ads1292r::ads1292ReadData(const int chipSelect)
+char* ads1292r::ReadData(const int chipSelect)
 {
   static char SPI_Dummy_Buff[10];
   digitalWrite(chipSelect, LOW);
@@ -104,43 +104,43 @@ char* ads1292r::ads1292ReadData(const int chipSelect)
   return SPI_Dummy_Buff;
 }
 
-void ads1292r::ads1292Init(const int chipSelect,const int pwdnPin,const int startPin)
+void ads1292r::Init(const int chipSelect,const int pwdnPin,const int startPin)
 {
   // start the SPI library:
-  ads1292Reset(pwdnPin);
+  Reset(pwdnPin);
   delay(100);
-  ads1292DisableStart(startPin);
-  ads1292EnableStart(startPin);
-  ads1292HardStop(startPin);
-  ads1292StartDataConvCommand(chipSelect);
-  ads1292SoftStop(chipSelect);
+  DisableStart(startPin);
+  EnableStart(startPin);
+  HardStop(startPin);
+  StartDataConvCommand(chipSelect);
+  SoftStop(chipSelect);
   delay(50);
-  ads1292StopReadDataContinuous(chipSelect);					// SDATAC command
+  StopReadDataContinuous(chipSelect);					// SDATAC command
   delay(300);
-  ads1292RegWrite(ADS1292_REG_CONFIG1, 0x00,chipSelect); 		//Set sampling rate to 125 SPS
+  RegWrite(ADS1292_REG_CONFIG1, 0x00,chipSelect); 		//Set sampling rate to 125 SPS
   delay(10);
-  ads1292RegWrite(ADS1292_REG_CONFIG2, 0b10100000,chipSelect);	//Lead-off comp off, test signal disabled
+  RegWrite(ADS1292_REG_CONFIG2, 0b10100000,chipSelect);	//Lead-off comp off, test signal disabled
   delay(10);
-  ads1292RegWrite(ADS1292_REG_LOFF, 0b00010000,chipSelect);		//Lead-off defaults
+  RegWrite(ADS1292_REG_LOFF, 0b00010000,chipSelect);		//Lead-off defaults
   delay(10);
-  ads1292RegWrite(ADS1292_REG_CH1SET, 0b01000000,chipSelect);	//Ch 1 enabled, gain 6, connected to electrode in
+  RegWrite(ADS1292_REG_CH1SET, 0b01000000,chipSelect);	//Ch 1 enabled, gain 6, connected to electrode in
   delay(10);
-  ads1292RegWrite(ADS1292_REG_CH2SET, 0b01100000,chipSelect);	//Ch 2 enabled, gain 6, connected to electrode in
+  RegWrite(ADS1292_REG_CH2SET, 0b01100000,chipSelect);	//Ch 2 enabled, gain 6, connected to electrode in
   delay(10);
-  ads1292RegWrite(ADS1292_REG_RLDSENS, 0b00101100,chipSelect);	//RLD settings: fmod/16, RLD enabled, RLD inputs from Ch2 only
+  RegWrite(ADS1292_REG_RLDSENS, 0b00101100,chipSelect);	//RLD settings: fmod/16, RLD enabled, RLD inputs from Ch2 only
   delay(10);
-  ads1292RegWrite(ADS1292_REG_LOFFSENS, 0x00,chipSelect);		//LOFF settings: all disabled
+  RegWrite(ADS1292_REG_LOFFSENS, 0x00,chipSelect);		//LOFF settings: all disabled
   delay(10);													//Skip register 8, LOFF Settings default
-  ads1292RegWrite(ADS1292_REG_RESP1, 0b11110010,chipSelect);		//Respiration: MOD/DEMOD turned only, phase 0
+  RegWrite(ADS1292_REG_RESP1, 0b11110010,chipSelect);		//Respiration: MOD/DEMOD turned only, phase 0
   delay(10);
-  ads1292RegWrite(ADS1292_REG_RESP2, 0b00000011,chipSelect);		//Respiration: Calib OFF, respiration freq defaults
+  RegWrite(ADS1292_REG_RESP2, 0b00000011,chipSelect);		//Respiration: Calib OFF, respiration freq defaults
   delay(10);
-  ads1292StartReadDataContinuous(chipSelect);
+  StartReadDataContinuous(chipSelect);
   delay(10);
-  ads1292EnableStart(startPin);
+  EnableStart(startPin);
 }
 
-void ads1292r::ads1292Reset(const int pwdnPin)
+void ads1292r::Reset(const int pwdnPin)
 {
   digitalWrite(pwdnPin, HIGH);
   delay(100);					// Wait 100 mSec
@@ -150,45 +150,45 @@ void ads1292r::ads1292Reset(const int pwdnPin)
   delay(100);
 }
 
-void ads1292r::ads1292DisableStart(const int startPin)
+void ads1292r::DisableStart(const int startPin)
 {
   digitalWrite(startPin, LOW);
   delay(20);
 }
 
-void ads1292r::ads1292EnableStart(const int startPin)
+void ads1292r::EnableStart(const int startPin)
 {
   digitalWrite(startPin, HIGH);
   delay(20);
 }
 
-void ads1292r::ads1292HardStop (const int startPin)
+void ads1292r::HardStop (const int startPin)
 {
   digitalWrite(startPin, LOW);
   delay(100);
 }
 
-void ads1292r::ads1292StartDataConvCommand (const int chipSelect)
+void ads1292r::StartDataConvCommand (const int chipSelect)
 {
-  ads1292SPICommandData(START,chipSelect);					// Send 0x08 to the ADS1x9x
+  SPICommandData(START,chipSelect);					// Send 0x08 to the ADS1x9x
 }
 
-void ads1292r::ads1292SoftStop (const int chipSelect)
+void ads1292r::SoftStop (const int chipSelect)
 {
-  ads1292SPICommandData(STOP,chipSelect);                   // Send 0x0A to the ADS1x9x
+  SPICommandData(STOP,chipSelect);                   // Send 0x0A to the ADS1x9x
 }
 
-void ads1292r::ads1292StartReadDataContinuous (const int chipSelect)
+void ads1292r::StartReadDataContinuous (const int chipSelect)
 {
-  ads1292SPICommandData(RDATAC,chipSelect);					// Send 0x10 to the ADS1x9x
+  SPICommandData(RDATAC,chipSelect);					// Send 0x10 to the ADS1x9x
 }
 
-void ads1292r::ads1292StopReadDataContinuous (const int chipSelect)
+void ads1292r::StopReadDataContinuous (const int chipSelect)
 {
-  ads1292SPICommandData(SDATAC,chipSelect);					// Send 0x11 to the ADS1x9x
+  SPICommandData(SDATAC,chipSelect);					// Send 0x11 to the ADS1x9x
 }
 
-void ads1292r::ads1292SPICommandData(unsigned char dataIn,const int chipSelect)
+void ads1292r::SPICommandData(unsigned char dataIn,const int chipSelect)
 {
   byte data[1];
   //data[0] = dataIn;
@@ -203,8 +203,8 @@ void ads1292r::ads1292SPICommandData(unsigned char dataIn,const int chipSelect)
   digitalWrite(chipSelect, HIGH);
 }
 
-//Sends a write command to SCP1000
-void ads1292r::ads1292RegWrite (unsigned char READ_WRITE_ADDRESS, unsigned char DATA,const int chipSelect)
+//Sends a write command to ADS1292
+void ads1292r::RegWrite (unsigned char READ_WRITE_ADDRESS, unsigned char DATA,const int chipSelect)
 {
 
   switch (READ_WRITE_ADDRESS)
@@ -254,4 +254,39 @@ void ads1292r::ads1292RegWrite (unsigned char READ_WRITE_ADDRESS, unsigned char 
   delay(2);
   // take the chip select high to de-select:
   digitalWrite(chipSelect, HIGH);
+}
+
+
+/* 
+Private RegRead
+Send read cmd and read 1 ADS1292 register
+*/
+unsigned char ads1292r::RegRead (unsigned char READ_ADDRESS, const int chipSelect)
+{
+  unsigned char  dataRead ;
+  // now combine the register address and the command into one byte (opcode 1):
+  byte dataToSend = READ_ADDRESS | RREG;
+  digitalWrite(chipSelect, LOW);
+  delay(2);
+  digitalWrite(chipSelect, HIGH);
+  delay(2);
+  // take the chip select low to select the device:
+  digitalWrite(chipSelect, LOW);
+  delay(2);
+  SPI.transfer(dataToSend); //Send register address to be read (opcode 1)
+  SPI.transfer(0x00);		// number of register to read (n-1) (opcode 2)
+  dataRead = SPI.transfer(0x00);		// Receive and read data from ADS register
+  delay(2);
+  // take the chip select high to de-select:
+  digitalWrite(chipSelect, HIGH);
+  return dataRead;
+}
+
+/* 
+Public getID
+method to read chip ID Control Register 
+*/
+unsigned char ads1292r::getID (const int chipSelect)
+{
+    return RegRead (0x00, chipSelect); 
 }
