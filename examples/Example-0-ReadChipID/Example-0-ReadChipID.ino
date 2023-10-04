@@ -64,9 +64,10 @@ void setup()
   pinMode(ADS1292_PWDN_PIN, OUTPUT);
 
   Serial.begin(57600);
+  Serial.println("Starting");
   ADS1292R.Init(ADS1292_CS_PIN,ADS1292_PWDN_PIN,ADS1292_START_PIN);
 
-  Serial.println("starting");
+  
   delay(1000);
   Serial.println("ID: ");
   ADS1292R.StopReadDataContinuous(ADS1292_CS_PIN);
